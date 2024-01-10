@@ -81,7 +81,7 @@ def score_domain(domain):
     # Remove lookalike characters using list from http://www.unicode.org/reports/tr39
     domain = unconfuse(domain)
 
-    words_in_domain = re.split("\W+", domain)
+    words_in_domain = re.split(r"\W+", domain)
 
     # ie. detect fake .com (ie. *.com-account-management.info)
     if words_in_domain[0] in ['com', 'net', 'org']:
