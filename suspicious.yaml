@@ -38,53 +38,8 @@ keywords:
     'safe': 10
     'form': 10
 
-# Apple iCloud
-    'appleid': 70
-    'icloud': 60
-    'iforgot': 60
-    'itunes': 50
-    'apple': 30
-
-# Email
-    'office365': 50
-    'microsoft': 60
-    'windows': 30
-    'protonmail': 70
-    'tutanota': 60
-    'hotmail': 60
-    'gmail': 70
-    'outlook': 60
-    'yahoo': 60
-    'google': 60
-    'yandex': 60
-
-# Social Media
-    'twitter': 60
-    'facebook': 60
-    'tumblr': 60
-    'reddit': 60
-    'youtube': 40 # some false positives
-    'linkedin': 60
-    'instagram': 60
-    'flickr': 60
-    'whatsapp': 60
-
-# Cryptocurrency
-    'localbitcoin': 70
-    'poloniex': 60
-    'coinhive': 70
-    'bithumb': 60
-    'kraken': 50 # some false positives
-    'bitstamp': 60
-    'bittrex': 60
-    'blockchain': 70
-    'bitflyer': 60
-    'coinbase': 60
-    'hitbtc': 60
-    'lakebtc': 60
-    'bitfinex': 60
-    'bitconnect': 60
-    'coinsbank': 60
+# Zendesk
+    'zendesk': 100
 
 # Bank/money
     'paypal': 70
@@ -101,21 +56,7 @@ keywords:
     'ameritrade': 60
     'merilledge': 60
     'bank': 15
-
-# Ecommerce
-    'amazon': 60
-    'overstock': 60
-    'alibaba': 60
-    'aliexpress': 60
-    'leboncoin': 70
-
-# Other
-    'netflix': 70
-    'skype': 60
-    'github': 60
-    'onedrive': 60
-    'dropbox': 60
-
+    
 # Miscellaneous & SE tricks
     'cgi-bin': 50
     '-com.': 20

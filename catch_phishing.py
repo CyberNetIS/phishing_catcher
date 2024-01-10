@@ -20,6 +20,7 @@ import os
 from Levenshtein import distance
 from termcolor import colored, cprint
 from tld import get_tld
+import collections
 
 from confusables import unconfuse
 
@@ -33,10 +34,18 @@ external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
 
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert')
 
+'''
 def entropy(string):
     """Calculates the Shannon entropy of a string"""
     prob = [ float(string.count(c)) / len(string) for c in dict.fromkeys(list(string)) ]
     entropy = - sum([ p * math.log(p) / math.log(2.0) for p in prob ])
+    return entropy
+'''
+def entropy(string):
+    """Calculates the Shannon entropy of a string."""
+    char_counts = collections.Counter(string)  # Efficiently count characters
+    prob = [count / len(string) for count in char_counts.values()]  # Get probabilities
+    entropy = -sum(p * math.log2(p) for p in prob)  # Calculate entropy using log2
     return entropy
 
 def score_domain(domain):
