@@ -27,12 +27,14 @@ from confusables import unconfuse
 certstream_url = 'wss://certstream.calidog.io'
 
 log_suspicious = os.path.dirname(os.path.realpath(__file__))+'/suspicious_domains_'+time.strftime("%Y-%m-%d")+'.log'
+log_alert = os.path.dirname(os.path.realpath(__file__))+'/malicious_domains_'+time.strftime("%Y-%m-%d")+'.log'
 
 suspicious_yaml = os.path.dirname(os.path.realpath(__file__))+'/suspicious.yaml'
 
 external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
 
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert')
+domain_match =''
 
 '''
 def entropy(string):
@@ -109,7 +111,6 @@ def score_domain(domain):
 
     return score
 
-
 def callback(message, context):
     """Callback handler for certstream events."""
     if message['message_type'] == "heartbeat":
@@ -125,20 +126,28 @@ def callback(message, context):
             # If issued from a free CA = more suspicious
             if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:
                 score += 10
+                if domain_match in domain:
+                    score+=1000
+                    tqdm.tqdm.write(
+                        "[!] ALERT: "
+                        "{} (score={})".format(colored(domain,'red'), score)
+                    )
 
-            if score >= 100:
+            if score >= 1000:
                 tqdm.tqdm.write(
-                    "[!] Suspicious: "
-                    "{} (score={})".format(colored(domain, 'red', attrs=['underline', 'bold']), score))
-            elif score >= 90:
+                    "[!] Malicious: "
+                    "{} (score={})".format(colored(domain, 'magenta', attrs=['underline', 'bold']), score))
+                with open(log_alert, 'a') as f:
+                    f.write("{}\n".format(domain))
+            elif score >= 100:
                 tqdm.tqdm.write(
                     "[!] Suspicious: "
                     "{} (score={})".format(colored(domain, 'red', attrs=['underline']), score))
-            elif score >= 80:
+            elif score >= 90:
                 tqdm.tqdm.write(
                     "[!] Likely    : "
                     "{} (score={})".format(colored(domain, 'yellow', attrs=['underline']), score))
-            elif score >= 65:
+            elif score >= 80:
                 tqdm.tqdm.write(
                     "[+] Potential : "
                     "{} (score={})".format(colored(domain, attrs=['underline']), score))

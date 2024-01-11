@@ -1,8 +1,8 @@
 termcolor==1.1.0
-certstream==1.10
+certstream
 tqdm
 tld==0.7.9
-python_Levenshtein
+levenshtein
 websocket-client==0.48.0
 PyYAML==5.1
 collection
