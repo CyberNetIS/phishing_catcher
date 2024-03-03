@@ -21,6 +21,11 @@ from Levenshtein import distance
 from termcolor import colored, cprint
 from tld import get_tld
 import collections
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import requests
+from bs4 import BeautifulSoup
 
 from confusables import unconfuse
 
@@ -32,6 +37,8 @@ log_alert = os.path.dirname(os.path.realpath(__file__))+'/malicious_domains_'+ti
 suspicious_yaml = os.path.dirname(os.path.realpath(__file__))+'/suspicious.yaml'
 
 external_yaml = os.path.dirname(os.path.realpath(__file__))+'/external.yaml'
+
+certificate_domain_match_yaml = os.path.dirname(os.path.realpath(__file__))+'/certificate_domain_match.yaml'
 
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert')
 domain_match =''
@@ -126,12 +133,16 @@ def callback(message, context):
             # If issued from a free CA = more suspicious
             if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:
                 score += 10
-                if domain_match in domain:
-                    score+=1000
-                    tqdm.tqdm.write(
-                        "[!] ALERT: "
-                        "{} (score={})".format(colored(domain,'red'), score)
-                    )
+                # Domains Match
+                for word in domain_match['keywords']:
+                    if word in domain:
+                        print("This is the DOMAIN: " + word)
+                        score+=1000
+                        tqdm.tqdm.write(
+                            "[!] ALERT: "
+                            "{} (score={})".format(colored(domain,'red'), score)
+                        )
+
 
             if score >= 1000:
                 tqdm.tqdm.write(
@@ -156,6 +167,69 @@ def callback(message, context):
                 with open(log_suspicious, 'a') as f:
                     f.write("{}\n".format(domain))
 
+# Sending an email notification
+def send_email(domian,cert_details):
+    # Replace with your actual email credentials
+    sender_email = "CyberNetIS.Intelligence@gmail.com"
+    password = "your_password"
+
+    # Recipient's email address
+    receiver_email = "recipient_email@example.com"
+
+    # Email subject and body
+    subject = "Notification about suspected domain"
+    body = "The following domain has been found to be registered using a Let's Encrypt Certificate: " + domian + "\n \n \n" +"Certificate Details : "
+
+    # Create a multi-part message
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg["Subject"] = subject
+
+    # Attach the plain text body
+    msg.attach(MIMEText(body, "plain"))
+
+    # Create a secure SSL context
+    context = smtplib.ssl.create_default_context()
+
+    # Send the email using Gmail's SMTP server
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+
+    print("Email sent successfully!")
+
+# Scraping a webpage
+def scrape_web_page(url):
+    """Scrapes the content of a web page given its URL.
+
+    Args:
+        url (str): The URL of the web page to scrape.
+
+    Returns:
+        str: The scraped content of the web page.
+
+    Raises:
+        Exception: If an error occurs during the scraping process.
+    """
+
+    try:
+        # Get the HTML content of the web page
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for error status codes
+
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Extract the text content from the HTML
+        scraped_content = soup.get_text(separator='\n')  # Separate paragraphs with newlines
+
+        return scraped_content
+
+    except Exception as e:
+        print(f"Error scraping web page: {e}")
+        raise  # Re-raise the exception to allow for error handling
+
 
 if __name__ == '__main__':
     with open(suspicious_yaml, 'r') as f:
@@ -163,6 +237,9 @@ if __name__ == '__main__':
 
     with open(external_yaml, 'r') as f:
         external = yaml.safe_load(f)
+
+    with open(certificate_domain_match_yaml, 'r') as f:
+        domain_match = yaml.safe_load(f)
 
     if external['override_suspicious.yaml'] is True:
         suspicious = external
@@ -172,5 +249,12 @@ if __name__ == '__main__':
 
         if external['tlds'] is not None:
             suspicious['tlds'].update(external['tlds'])
+
+    
+    # Example usage:
+ #   url = "https://www.example.com"  # Replace with the URL you want to scrape
+ #   scraped_content = scrape_web_page(url)
+
+#  print(scraped_content)
 
     certstream.listen_for_events(callback, url=certstream_url)

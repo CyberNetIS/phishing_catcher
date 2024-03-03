@@ -6,3 +6,5 @@ levenshtein
 websocket-client==0.48.0
 PyYAML==5.1
 collection
+requests
+bs4
